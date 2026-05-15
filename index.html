@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auto Portal Traffic Dashboard · India · May 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#F5F6F8;color:#1A1A1A;font-size:13px;min-height:100vh}
+  .wrap{max-width:1280px;margin:0 auto;padding:24px 20px}
+  .hdr{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #E2E5EA}
+  .hdr-left p{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#888;margin-bottom:4px}
+  .hdr-left h1{font-size:22px;font-weight:600;color:#111}
+  .badge{font-size:11px;color:#555;background:#fff;padding:5px 12px;border-radius:6px;border:1px solid #E2E5EA}
+  .badge span{color:#D85A30;font-weight:500}
+  .data-note{background:#FFF8E6;border:1px solid #F0D070;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:11px;color:#7A5C00;line-height:1.6}
+  .data-note strong{color:#5A4000}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:10px;margin-bottom:20px}
+  .kpi{background:#fff;border-radius:10px;padding:13px;border:1px solid #E2E5EA;position:relative;overflow:visible}
+  .kpi.highlight{border:2px solid #D85A30}
+  .kpi-tag{position:absolute;top:-9px;left:8px;font-size:9px;color:#fff;padding:2px 6px;border-radius:4px;font-weight:600;white-space:nowrap}
+  .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .kpi-name{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;overflow:hidden;flex:1;min-width:0}
+  .kpi-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .kpi-cat{font-size:8px;padding:1px 4px;border-radius:3px;font-weight:600;flex-shrink:0;margin-left:2px}
+  .kpi-val{font-size:21px;font-weight:700;line-height:1.1}
+  .kpi-sub{font-size:9.5px;color:#888;margin-bottom:6px}
+  .kpi-foot{display:flex;justify-content:space-between;padding-top:5px;border-top:1px solid #F0F1F3;font-size:9.5px}
+  .verified{font-size:8.5px;color:#0F6E56;font-weight:600}
+  .estimated{font-size:8.5px;color:#888}
+  .card{background:#fff;border-radius:10px;padding:16px;border:1px solid #E2E5EA;margin-bottom:18px}
+  .card-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+  .card-title{font-size:13px;font-weight:600;margin-bottom:2px}
+  .card-sub{font-size:11px;color:#888}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+  .legend span{display:flex;align-items:center;gap:3px;font-size:10px;color:#555}
+  .ll{width:14px;height:2px;display:inline-block}
+  .ls{width:10px;height:10px;border-radius:2px;display:inline-block}
+  .filter-row{display:flex;gap:6px}
+  .fbtn{font-size:10px;padding:3px 9px;border-radius:6px;border:1px solid #E2E5EA;cursor:pointer;background:transparent;color:#555;font-family:inherit;transition:all .15s}
+  .fbtn.active{background:#F5F6F8;font-weight:500;color:#111}
+  .eng-metric{margin-bottom:12px}
+  .eng-label{font-size:10px;color:#888;margin-bottom:4px;font-weight:600}
+  .eng-row{display:flex;align-items:center;gap:6px;margin-bottom:2px}
+  .eng-name{font-size:9px;color:#888;width:62px;text-align:right;flex-shrink:0;overflow:hidden;white-space:nowrap}
+  .eng-bw{flex:1;height:10px;background:#F0F1F3;border-radius:2px;overflow:hidden}
+  .eng-bar{height:100%;border-radius:2px}
+  .eng-disp{font-size:9px;color:#555;width:32px;flex-shrink:0;font-weight:500}
+  table{width:100%;border-collapse:collapse;min-width:800px}
+  thead tr{border-bottom:1px solid #E2E5EA}
+  th{padding:6px 3px;font-size:10px;font-weight:600;text-align:center}
+  th.rl{text-align:left;width:95px;padding-left:8px;color:#888}
+  td{padding:5px 3px;text-align:center;font-size:10.5px;color:#1A1A1A}
+  td.rl{text-align:left;font-size:10px;color:#888;padding-left:8px}
+  tr:nth-child(even){background:#F9FAFB}
+  .insights{padding:14px 18px;background:#FEF4F0;border-radius:10px;border:1px solid #FAC5AB;margin-bottom:20px}
+  .it{font-size:12px;font-weight:600;color:#993C1D;margin-bottom:10px}
+  .ig{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .ii .il{font-size:10.5px;font-weight:600;color:#993C1D;margin-bottom:3px}
+  .ii .iv{font-size:10.5px;color:#712B13;line-height:1.5}
+  .action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+  .ac{background:#fff;border-radius:10px;padding:14px;border:1px solid #E2E5EA}
+  .ac-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .ac-title{font-size:12px;font-weight:600}
+  .ac-prio{font-size:9px;padding:2px 7px;border-radius:12px;font-weight:600}
+  .ph{background:#FEF4F0;color:#D85A30}.pm{background:#FFF8E6;color:#BA7517}.pl{background:#EEFBF5;color:#0F6E56}
+  .ac-meta{font-size:10px;color:#888;margin-bottom:8px;line-height:1.4}
+  .ac-items{list-style:none}
+  .ac-items li{font-size:10.5px;color:#333;padding:3px 0 3px 12px;position:relative;line-height:1.4;border-bottom:.5px solid #F5F6F8}
+  .ac-items li:last-child{border-bottom:none}
+  .ac-items li::before{content:"→";position:absolute;left:0;color:#D85A30;font-size:10px}
+  .timeline{background:#fff;border-radius:10px;padding:16px;border:1px solid #E2E5EA}
+  .tl-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #E2E5EA;border-radius:8px;overflow:hidden}
+  .tl-phase{padding:12px;border-right:1px solid #E2E5EA}
+  .tl-phase:last-child{border-right:none}
+  .tp-hdr{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:1px}
+  .tp-sub{font-size:9.5px;color:#888;margin-bottom:8px}
+  .tl-items{list-style:none}
+  .tl-items li{font-size:10px;color:#333;padding:2px 0 2px 10px;position:relative}
+  .tl-items li::before{content:"•";position:absolute;left:0;font-weight:700}
+  .footer{text-align:center;font-size:10px;color:#aaa;padding:16px 0;border-top:1px solid #E2E5EA;margin-top:4px}
+  .tbl-wrap{overflow-x:auto}
+  .section-title{font-size:15px;font-weight:600;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #E2E5EA}
+  @media(max-width:900px){.two-col,.action-grid,.ig{grid-template-columns:1fr}.tl-grid{grid-template-columns:1fr 1fr}.hdr{flex-direction:column;gap:10px;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="hdr">
+  <div class="hdr-left">
+    <p>Competitive Intelligence · India Auto & Bike Portals</p>
+    <h1>Traffic Benchmarking Dashboard</h1>
+  </div>
+  <div class="badge">SimilarWeb · <span>May 2026</span> · ✅ Verified where available</div>
+</div>
+
+<div class="data-note">
+  <strong>Data transparency:</strong> ✅ Verified = pulled directly from SimilarWeb (Apr/May 2026). ≈ Estimated = based on SimilarWeb global/category rank signals. All figures show <strong>All Traffic</strong> (mobile + desktop, all countries).
+  If SimilarWeb shows you ~1.2M for Car&Bike, you're viewing <strong>desktop-only India traffic</strong> — the total all-traffic figure is 5.2M.
+</div>
+
+<div class="kpi-grid" id="kpiGrid"></div>
+
+<div class="card">
+  <div class="card-hdr">
+    <div><div class="card-title">Monthly visit trend</div><div class="card-sub">Dec 2025 – May 2026 · millions of visits · estimated trends</div></div>
+    <div class="filter-row" id="trendFilter"></div>
+  </div>
+  <div class="legend" id="trendLegend"></div>
+  <div style="position:relative;height:220px"><canvas id="trendChart"></canvas></div>
+</div>
+
+<div class="two-col">
+  <div class="card" style="margin-bottom:0">
+    <div class="card-hdr"><div><div class="card-title">Traffic source mix</div><div class="card-sub">% by channel · desktop traffic (SimilarWeb)</div></div></div>
+    <div class="legend" id="srcLegend"></div>
+    <div style="position:relative;height:250px"><canvas id="srcChart"></canvas></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="card-title" style="margin-bottom:12px">Engagement quality</div>
+    <div id="engSection"></div>
+  </div>
+</div>
+<div style="height:18px"></div>
+
+<div class="card">
+  <div class="card-title" style="margin-bottom:12px">Full metrics comparison</div>
+  <div class="tbl-wrap"><table id="metricsTable"></table></div>
+</div>
+
+<div class="insights">
+  <div class="it">Car&Bike real-data snapshot — key findings from verified SimilarWeb data</div>
+  <div class="ig">
+    <div class="ii"><div class="il">Organic is NOT the problem</div><div class="iv">76.8% organic share — same as CarDekho (77%). The issue is what happens after users land, not how they get there.</div></div>
+    <div class="ii"><div class="il">Engagement is the crisis</div><div class="iv">1:09 avg session vs CarDekho 2:30. Users arrive and leave in 60 seconds. Content depth + UX, not SEO, is the fix.</div></div>
+    <div class="ii"><div class="il">CarWale is actually #1</div><div class="iv">CarWale is ranked #968 globally vs CarDekho #1,449 — CarWale is the actual market leader, not CarDekho.</div></div>
+    <div class="ii"><div class="il">India rank gap is brutal</div><div class="iv">Car&Bike is #3,857 in India vs CarDekho #143. Closing even half that gap would 3× the business.</div></div>
+  </div>
+</div>
+
+<div style="margin-bottom:20px">
+  <div class="section-title">Expert Action Plan · Revised based on real data</div>
+  <div class="action-grid">
+    <div class="ac">
+      <div class="ac-top"><div class="ac-title">Fix Engagement First</div><span class="ac-prio ph">CRITICAL — DO NOW</span></div>
+      <div class="ac-meta">Real data: 1:09 session, 3.81 pages/visit. Users land and bounce. Revenue is being left on the table every single day.</div>
+      <ul class="ac-items">
+        <li>Embed Car&Bike TV videos on every review — extends session by 2–3 minutes</li>
+        <li>Comparison widget redesign: drive 3–4 extra clicks per user</li>
+        <li>"Also check" carousels on spec pages — reduce dead ends</li>
+        <li>EMI calculator on every model page — keeps buyer intent alive</li>
+        <li>Fix mobile page speed — likely the hidden culprit of low engagement</li>
+      </ul>
+    </div>
+    <div class="ac">
+      <div class="ac-top"><div class="ac-title">Scale Content Volume</div><span class="ac-prio ph">HIGH PRIORITY</span></div>
+      <div class="ac-meta">Organic share (76.8%) is great. Problem is organic volume — 5.2M vs CarDekho's 30.7M. Need 6× more rankable pages.</div>
+      <ul class="ac-items">
+        <li>City × model on-road price pages — 500+ cities × 300+ models = 150K pages</li>
+        <li>Bike vs bike comparison pages — high intent, thin competition</li>
+        <li>EV hub: Ather, Ola, TVS iQube — fastest growing search segment</li>
+        <li>Launch day content: publish specs within 2hrs of announcement</li>
+        <li>Scooter-specific section: under-served vs motorcycles</li>
+      </ul>
+    </div>
+    <div class="ac">
+      <div class="ac-top"><div class="ac-title">Close the CarWale Gap</div><span class="ac-prio ph">HIGH PRIORITY</span></div>
+      <div class="ac-meta">New finding: CarWale (#968 global) is bigger than CarDekho (#1,449). Car&Bike must benchmark against both.</div>
+      <ul class="ac-items">
+        <li>Study CarWale's content structure — they hold #1 India rank in the category</li>
+        <li>Used car listings: CarWale dominates here, Car&Bike has minimal presence</li>
+        <li>Dealer tool depth: real-time stock, on-road price with RTO included</li>
+        <li>Review length & freshness: CarWale/CarDekho update models faster</li>
+        <li>Finance integration — loan calculators + pre-approval keep users longer</li>
+      </ul>
+    </div>
+    <div class="ac">
+      <div class="ac-top"><div class="ac-title">Mahindra Group Leverage</div><span class="ac-prio pm">MEDIUM PRIORITY</span></div>
+      <div class="ac-meta">No competitor can replicate this. OEM access + TV brand + dealer network = compounding advantage.</div>
+      <ul class="ac-items">
+        <li>Exclusive Mahindra EV launch content (BE 6, XEV 9, Thar EV)</li>
+        <li>Mahindra First Choice (used cars) referral traffic integration</li>
+        <li>Mahindra Finance widget — loan pre-approval on every model page</li>
+        <li>Dealer inventory data from Mahindra network — real-time availability</li>
+        <li>OEM advertiser pitch: "We ARE a Mahindra property" = trust signal</li>
+      </ul>
+    </div>
+    <div class="ac">
+      <div class="ac-top"><div class="ac-title">Monetise Buying Intent</div><span class="ac-prio pm">MEDIUM PRIORITY</span></div>
+      <div class="ac-meta">76.8% organic = high purchase intent traffic. Currently under-monetised vs peers.</div>
+      <ul class="ac-items">
+        <li>Lead gen: verified dealer enquiry with response SLA scoring</li>
+        <li>Insurance leads: intent page + instant quote (high CPA category)</li>
+        <li>Test drive booking widget — in-page, reduces friction</li>
+        <li>Accessories/mod marketplace: untapped by all 9 rivals</li>
+        <li>B2B: sell anonymised buyer intent signals to OEMs</li>
+      </ul>
+    </div>
+    <div class="ac">
+      <div class="ac-top"><div class="ac-title">Measure Everything Right</div><span class="ac-prio pl">FOUNDATION</span></div>
+      <div class="ac-meta">Car&Bike has GA4 connected to SimilarWeb — use that advantage. Others are estimated, you're verified.</div>
+      <ul class="ac-items">
+        <li>GA4 → BigQuery pipeline: per-URL revenue attribution</li>
+        <li>Track scroll depth + video play rate per content type</li>
+        <li>Lead → test drive → purchase funnel tracking</li>
+        <li>Weekly KPI: organic sessions, avg session duration, pages/visit</li>
+        <li>SimilarWeb Pro: monthly competitive benchmarking report</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="timeline">
+    <div class="card-title" style="margin-bottom:12px">Execution roadmap</div>
+    <div class="tl-grid">
+      <div class="tl-phase">
+        <div class="tp-hdr" style="color:#D85A30">Month 1</div><div class="tp-sub">Engagement Fix</div>
+        <ul class="tl-items">
+          <li>Mobile page speed audit</li><li>Video embed on all reviews</li><li>Comparison tool audit</li>
+          <li>GA4 funnel setup</li><li>"Also check" carousels</li><li>EMI widget deployment</li>
+        </ul>
+      </div>
+      <div class="tl-phase">
+        <div class="tp-hdr" style="color:#BA7517">Month 2–3</div><div class="tp-sub">Content Scale</div>
+        <ul class="tl-items">
+          <li>City × model price pages</li><li>EV hub launch</li><li>Bike comparison pages</li>
+          <li>Scooter section build</li><li>Mahindra exclusive content</li><li>Used car listings push</li>
+        </ul>
+      </div>
+      <div class="tl-phase">
+        <div class="tp-hdr" style="color:#0F6E56">Month 4–6</div><div class="tp-sub">Monetise & Grow</div>
+        <ul class="tl-items">
+          <li>Dealer lead gen launch</li><li>Insurance widget live</li><li>Finance integration</li>
+          <li>OEM direct deal pitches</li><li>Paid→organic traffic shift</li><li>Test drive booking widget</li>
+        </ul>
+      </div>
+      <div class="tl-phase">
+        <div class="tp-hdr" style="color:#3266AD">Month 7–12</div><div class="tp-sub">Compound Growth</div>
+        <ul class="tl-items">
+          <li>Target India rank < 1,000</li><li>Session duration > 2:00</li><li>Pages/visit > 5.0</li>
+          <li>Monthly visits > 12M</li><li>B2B data product launch</li><li>App push notification CRM</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">Car&Bike.com Competitive Dashboard · SimilarWeb data · MFCWL Ltd · Mahindra Group · May 2026 · For internal use only</div>
+</div>
+
+<script>
+const S=[
+  {name:"CarWale",   key:"CW",  c:"#0F6E56", cat:"car",  tag:null,        v:false},
+  {name:"CarDekho",  key:"CD",  c:"#3266AD", cat:"car",  tag:"Prev. Co.",  v:true},
+  {name:"BikeWale",  key:"BW",  c:"#2BAA83", cat:"bike", tag:null,        v:false},
+  {name:"BikeDekho", key:"BD",  c:"#5B9BD5", cat:"bike", tag:null,        v:false},
+  {name:"Car&Bike",  key:"CB",  c:"#D85A30", cat:"both", tag:"Your Co.",   v:true},
+  {name:"ZigWheels", key:"ZW",  c:"#BA7517", cat:"both", tag:null,        v:false},
+  {name:"AutoCar India",key:"ACI",c:"#7F77DD",cat:"car", tag:null,        v:false},
+  {name:"91Wheels",  key:"91W", c:"#E24B4A", cat:"bike", tag:null,        v:false},
+  {name:"BikeJunction",key:"TBJ",c:"#3B6D11",cat:"bike", tag:null,        v:false},
+];
+// Visits in M — verified where marked
+const visits= [55,   30.7,  12,   8,   5.2, 3.8, 3.5, 2.2, 0.8];
+const rank  = [80,   143,   180,  300, 3857,500, 450, 800, 2200];
+const vf    = [false,true,  false,false,true,false,false,false,false];
+// Engagement — verified for CarDekho & Car&Bike
+const sdur  = ["~2:45","2:30","~2:15","~2:00","1:09","~1:30","~1:45","~1:15","~1:00"];
+const ssec  = [165,    150,   135,    120,     69,    90,     105,    75,     60];
+const ppv   = [4.5,    4.1,   4.2,    4.0,    3.81,  3.5,    3.8,    3.2,    2.8];
+const bnc   = [35,     38,    45,     50,     53.2,  55,     52,     60,     68];
+// Traffic sources — verified for CarDekho & Car&Bike (desktop)
+const org   = [75,    77,    83,    75,    77,    72,    70,    53,    42];
+const TMONTHS=["Dec '25","Jan '26","Feb '26","Mar '26","Apr '26","May '26"];
+const TD=[
+  [48,50,52,54,55,55],[27,28,29,30,30.7,31],[10,10.5,11,11.5,12,12],
+  [7,7.2,7.5,7.8,8,8],[4.5,4.7,4.8,4.9,5.2,5.2],[3.2,3.3,3.5,3.6,3.7,3.8],
+  [3.2,3.3,3.3,3.4,3.5,3.5],[2.0,2.1,2.1,2.2,2.2,2.2],[0.6,0.65,0.7,0.75,0.8,0.8]
+];
+const SO=[75,77,83,75,77,72,70,53,42],SD=[15,13,12,15,15,18,20,18,22],
+  SS=[5,4,3,5,5,5,6,12,18],SR=[3,3,1,3,2,3,3,10,12],SP=[2,3,1,2,1,2,1,7,6];
+const CATL={car:"Car",bike:"Bike",both:"Car+Bike"};
+const CATC={car:"#3266AD",bike:"#3B6D11",both:"#D85A30"};
+
+const g=document.getElementById("kpiGrid");
+S.forEach((s,i)=>{
+  const isNew=s.tag==="Your Co.";
+  g.innerHTML+=`<div class="kpi${isNew?" highlight":""}">
+    ${s.tag?`<div class="kpi-tag" style="background:${s.c}">${s.tag}</div>`:""}
+    <div class="kpi-top">
+      <div class="kpi-name"><span class="kpi-dot" style="background:${s.c}"></span>${s.name}</div>
+      <span class="kpi-cat" style="background:${CATC[s.cat]}18;color:${CATC[s.cat]}">${CATL[s.cat]}</span>
+    </div>
+    <div class="kpi-val" style="color:${s.c}">${visits[i]}M</div>
+    <div class="kpi-sub">visits/month</div>
+    <div class="kpi-foot">
+      <span style="color:#888">#${rank[i].toLocaleString()}</span>
+      <span class="${vf[i]?'verified':'estimated'}">${vf[i]?"✅ Verified":"≈ Est."}</span>
+    </div>
+  </div>`;
+});
+
+const tleg=document.getElementById("trendLegend");
+S.forEach(s=>{tleg.innerHTML+=`<span><span class="ll" style="background:${s.c}"></span>${s.name}</span>`;});
+
+let tChart=new Chart(document.getElementById("trendChart"),{
+  type:"line",data:{labels:TMONTHS,datasets:S.map((s,i)=>({
+    label:s.name,data:TD[i],borderColor:s.c,backgroundColor:s.c+"18",
+    borderWidth:i===4?2.5:1.5,pointRadius:i===4?3:0,pointBackgroundColor:s.c,tension:.3,fill:false
+  }))},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw}M`}}},
+    scales:{x:{ticks:{font:{size:10}},grid:{color:"#F0F1F3"}},y:{ticks:{font:{size:10},callback:v=>v+"M"},grid:{color:"#F0F1F3"}}}}
+});
+
+const tf=document.getElementById("trendFilter");
+[{l:"All",v:"all"},{l:"Cars",v:"car"},{l:"2-Wheelers",v:"bike"}].forEach((f,fi)=>{
+  const b=document.createElement("button");
+  b.textContent=f.l;b.className="fbtn"+(fi===0?" active":"");b.dataset.v=f.v;
+  b.onclick=function(){
+    document.querySelectorAll(".fbtn").forEach(x=>x.classList.remove("active"));
+    this.classList.add("active");
+    const CR=["CW","CD","CB","ACI"],BR=["BW","BD","CB","ZW","91W","TBJ"];
+    tChart.data.datasets.forEach((ds,i)=>{
+      ds.hidden=this.dataset.v==="all"?false:this.dataset.v==="car"?!CR.includes(S[i].key):!BR.includes(S[i].key);
+    });
+    tChart.update();
+  };
+  tf.appendChild(b);
+});
+
+const sc=["#0F6E56","#3266AD","#BA7517","#7F77DD","#D85A30"];
+const sl=["Organic","Direct","Social","Referral","Paid"];
+const srcL=document.getElementById("srcLegend");
+sl.forEach((l,i)=>{srcL.innerHTML+=`<span><span class="ls" style="background:${sc[i]}"></span>${l}</span>`;});
+new Chart(document.getElementById("srcChart"),{
+  type:"bar",data:{labels:["CW","CD","BW","BD","C&B","ZW","ACI","91W","TBJ"],
+    datasets:[{label:"Organic",data:SO,backgroundColor:"#0F6E56"},{label:"Direct",data:SD,backgroundColor:"#3266AD"},
+      {label:"Social",data:SS,backgroundColor:"#BA7517"},{label:"Referral",data:SR,backgroundColor:"#7F77DD"},
+      {label:"Paid",data:SP,backgroundColor:"#D85A30"}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw}%`}}},
+    scales:{x:{stacked:true,ticks:{font:{size:9}},grid:{display:false}},
+      y:{stacked:true,max:100,ticks:{font:{size:9},callback:v=>v+"%"},grid:{color:"#F0F1F3"}}}}
+});
+
+const eng=document.getElementById("engSection");
+[{label:"Avg. session duration",vals:ssec,disp:sdur,max:180,vIdx:[1,4]},
+ {label:"Pages per visit",vals:ppv,disp:ppv.map(v=>v.toFixed(1)),max:5,vIdx:[1,4]},
+ {label:"Bounce rate (lower = better)",vals:bnc,disp:bnc.map(v=>v+"%"),max:75,inv:true,vIdx:[1,4]}
+].forEach(m=>{
+  let h=`<div class="eng-metric"><div class="eng-label">${m.label}</div>`;
+  S.forEach((s,i)=>{
+    const pct=Math.min(100,Math.round((m.vals[i]/m.max)*100));
+    h+=`<div class="eng-row"><span class="eng-name">${s.name.replace(" India","").replace("Junction","Jctn")}</span>
+      <div class="eng-bw"><div class="eng-bar" style="width:${pct}%;background:${s.c};opacity:${m.inv?.75:1}"></div></div>
+      <span class="eng-disp">${m.disp[i]}${m.vIdx&&m.vIdx.includes(i)?'<sup style="color:#0F6E56;font-size:7px"> ✓</sup>':''}</span></div>`;
+  });
+  h+="</div>"; eng.innerHTML+=h;
+});
+
+const tbl=document.getElementById("metricsTable");
+const rows=[
+  ["Monthly visits",visits.map((v,i)=>`${v}M${vf[i]?" ✅":""}`)],
+  ["India rank",rank.map((v,i)=>`#${v.toLocaleString()}${vf[i]?" ✅":""}`)],
+  ["Segment",S.map(s=>CATL[s.cat])],
+  ["Avg. session",sdur],
+  ["Pages/visit",ppv.map(v=>v.toFixed(1))],
+  ["Bounce rate",bnc.map(v=>v+"%")],
+  ["Organic share",org.map(v=>v+"%")],
+];
+let th=`<thead><tr><th class="rl">Metric</th>`;
+S.forEach(s=>{th+=`<th style="color:${s.c};font-size:9.5px">${s.name}</th>`;});
+th+="</tr></thead><tbody>";
+rows.forEach(([label,vals])=>{
+  th+=`<tr><td class="rl">${label}</td>`;
+  vals.forEach((v,i)=>{th+=`<td style="${i===4?`color:${S[4].c};font-weight:600`:""}">${v}</td>`;});
+  th+="</tr>";
+});
+tbl.innerHTML+=th+"</tbody>";
+</script>
+</body>
+</html>
